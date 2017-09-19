@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Vuejs Aframe 3d.io demo</title>
+  <meta name="description" content="Vuejs Aframe 3d.io demo">
+  <!-- aframe -->
+  <script src="https://aframe.io/releases/0.6.1/aframe.min.js"></script>
+  <!-- vue.js -->
+  <script src="https://unpkg.com/vue"></script>
+  <!-- 3d.io -->
+  <script src="https://3d.io/releases/3dio-js/1.0.x-beta/3dio.min.js"></script>
+  <!-- lodash -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+  <style>
+    #app {
+      width: 100%; height: 100%;
+    }
+    input {
+      position: absolute; top:10px; left:10px; width:300px; font-size:16px; outline: none; font-weight: bold; padding: 5px 10px; z-index:1000;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <input class="input" v-model="searchStr" @input="findFurniture">
+    <a-scene>
+      <a-camera position="0 2 0" rotation="-41 0 0"></a-camera>
+      <!-- vue js component that wraps our aframe entity -->
+      <vue-furniture v-for="(id, i) in ids" :furniture-id="'id:' + id" :index="i"></vue-furniture>
+    </a-scene>
+  </div>
+  <script>
+    Vue.component('vue-furniture', {
+      props: ['furnitureId', 'index'],
+      template: `
+<a-entity :io3d-furniture="furnitureId" :position="pos">
+  <a-box height="0.04" :color="rndColor" :width="stepSize" :depth="stepSize" position="0 -0.02 0"></a-box>
+</a-entity>`,
+      data () {
+        return {
+          stepSize: 3
+        }
+      },
+      computed: {
+        rndColor: function(){
+          // magic pastel color formula
+          var hue = Math.floor(Math.random() * 290) - 40
+          var saturation = Math.floor(Math.random() * 20) + 20
+          var lightness = Math.floor(Math.random() * 20) + 70
+          return `hsl(${hue < 0 ? hue + 360 : hue}, ${saturation}%, ${lightness}%)`
+        },
+        pos: function() {
+          // we want rows of 5
+          var xPos = this.index % 5 * this.stepSize - this.stepSize * 2
+          var zPos = Math.floor(this.index / 5) * -this.stepSize -2
+          return `${xPos} 0 ${zPos}`
+        }
+      }
+    })
+    new Vue({
+      el: '#app',
+      data: {
+        ids: [],
+        searchStr: 'chair',
+        placement: null
+      },
+      methods: {
+        findFurniture: _.debounce(function() {
+          // check out 3d.io furniture documentation here: https://3d.io/docs/api/1/furniture.html
+          io3d.furniture.search(this.searchStr, {limit: 300})
+          .then(result => {
+            if (result && result.length) {
+              result = result.map(item => item.id)
+              this.ids = []
+              const placement = io3d.utils.uuid.generate()
+              this.placement = placement
+              // populate array with delay
+              result.forEach((el, i) => {
+                _.delay(() => {
+                  if (placement === this.placement) this.ids.push(el) 
+                }, 25 * i)
+              })
+            }
+          })
+          .catch(console.error)
+        }, 300)
+      },
+      created: function() {
+        this.findFurniture()
+      }
+    })
+  </script>
+</body>
+</html>
