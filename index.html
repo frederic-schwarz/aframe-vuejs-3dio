@@ -30,6 +30,12 @@
     </a-scene>
   </div>
   <script>
+    Vue.config.ignoredElements = [
+      'a-scene',
+      'a-entity',
+      'a-camera',
+      'a-box'
+    ]
     Vue.component('vue-furniture', {
       props: ['furnitureId', 'index'],
       template: `
