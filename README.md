@@ -1,6 +1,6 @@
-# Using vuejs with aframe
+# Using vuejs with A-frame
 
-Aframe is great, vuejs is great why not combine them?
+A-frame is great, vuejs is great why not combine them?
 
 This demo uses a custom vue component to wrap an aframe entity to add reactive magic to the aframe scene
 https://rawgit.com/frederic-schwarz/aframe-vuejs-3dio/master/index.html
